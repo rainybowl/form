@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+ <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+<xsl:variable name="form" select="root/form"/>
+<xsl:variable name="group" select="$form/group" />
+<xsl:variable name="field" select="$group/item" />
+
+<xsl:template match="/">
+<!--![CDATA[[
+<!DOCTYPE HTML>
+]]-->
+
+<html>
+<head>
+<title>Форма</title>
+<style type="text/css">
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li,  form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+  outline: none;
+}
+
+
+body {
+	font-size: 14px;
+	font-family: Sans-Serif;
+	line-height: 18px;
+	text-indent: 10px;
+	color: #4d4d32;
+	background: #fbfbf2;
+}
+
+p {
+	margin: 10px auto;
+}
+
+ol, ul {
+	margin: 10px 25px;
+}
+
+a	{color: #848461;
+}
+
+form {
+	width: 50%;
+}
+
+fieldset {
+	margin: 20px 10px;
+}
+
+legend, fieldset {
+	border: 1px solid #848461;
+	background: #f2f2dd;
+	border-radius: 5px;
+}
+
+legend {
+	background: #fdfdee;
+	font-size: 16px;
+	font-style: italic;
+	font-weight: bold;
+	padding: 10px 10px 10px 0px;
+}
+
+label, input {
+	display: block;
+	text-indent: 0px;
+}
+
+input[type=text], textarea {
+	border: 1px solid #848461;
+	color: #4d4d32;
+	background: #f6f6ed;
+}
+
+input, textarea {
+	margin: 10px 0;
+}
+
+input[type=submit], input[type=reset] {
+	border-radius: 5px;	
+	background: #ecece0;
+}
+
+
+textarea {
+	width: 90%;
+	min-height: 100px;
+}
+
+input:focus, textarea:focus {
+	border: 1px solid #787853;
+	background: #ecece0;
+}
+
+label:first-of-type {
+	margin-top: 25px;
+}
+
+label {
+	margin-top: 15px;
+}
+
+select {margin: 15px auto;
+}
+
+.clear	{
+	clear: both;
+	height: 15px;
+}
+
+#robot {
+	width: 90px;
+	height: 130px;
+	float: left;
+}
+
+
+#lfoot, #rfoot, #body	{
+	border-top: none;
+}
+
+#lfoot, #rfoot, #body, #head {
+	background: #f2f2dd;
+}
+
+
+</style>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+
+
+<script type="text/javascript">
+
+//tools
+
+function el(id)
+{
+	return document.getElementById(id);
+}
+
+
+function hideFields()
+{
+	for(var i = 1; i &lt; el('forma').getElementsByTagName('fieldset').length; i++)
+	{
+		el('forma').getElementsByTagName('fieldset')[i].style.display = 'none';
+	}
+}
+
+
+function getOffsetRect(elem) {
+
+    var box = elem.getBoundingClientRect()
+     
+    var body = document.body
+    var docElem = document.documentElement
+     
+    var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop
+    var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft
+     
+    var clientTop = docElem.clientTop || body.clientTop || 0
+    var clientLeft = docElem.clientLeft || body.clientLeft || 0
+     
+    var top  = box.top +  scrollTop - clientTop
+    var left = box.left + scrollLeft - clientLeft
+     
+    return { top: Math.round(top), left: Math.round(left) }
+}
+
+
+// funcs
+
+var formats = [];
+
+function inputCheck(elem)
+{
+	var overall = true;
+
+	$('form fieldset:visible textarea, form fieldset:visible input[type=text]').each(function(){
+		if(overall) overall = ($(this).val() != '');
+	})	
+		 
+	if(overall) //if no fields are empty
+	{
+
+		var nextFieldset = getOffsetRect( el(elem.parent().next().attr('id')) );
+		elem.parent().next().fadeIn('3000');
+		window.scrollTo(getOffsetRect( el(elem.parent().next().attr('id')) ).left, getOffsetRect( el(elem.parent().next().attr('id')) ).top);
+
+		setTimeout( function() {
+				move(el('robot'), getOffsetRect( el(elem.parent().next().attr('id'))).top);
+		}, 500);
+
+
+		smile('block');
+		setTimeout(function() {smile('none')}, 3000);
+		
+	}
+	else //indicate empty fields
+	{
+		//
+	}				
+}
+
+
+// robot
+function addElem(params)
+{
+	var el = document.createElement('div');
+	el.id = (params.id) ? params.id : '';
+	el.style.width = (params.width) ? params.width + 'px' : '0px';
+	el.style.height = (params.height) ? params.height  + 'px' : '10px';
+	el.style.border = (params.border) ? params.border : 'none';
+	el.style.background = (params.background) ? params.background : 'none';
+	el.style.position = 'absolute';
+	el.style.top = (params.top) ? params.top + 'px' : '0';
+	el.style.left = (params.left) ? params.left + 'px' : '0';
+
+	params.where.appendChild(el);
+}
+
+function robo(){
+	var robot = document.createElement('div');
+	robot.id = 'robot';
+	robot.style.position = 'relative';
+	robot.style.top = '20px';
+	robot.style.left = '50px';
+	document.body.appendChild(robot);
+	robot = document.getElementById('robot');
+
+	addElem({id: 'head', width: '70', height: '50', border: '1px solid #848461', top: '10', left: '10', where: robot});
+
+		addElem({id: 'leye', width: '4', height: '4', background: 'black', top: '10', left: '10', where: head});
+		addElem({id: 'reye', width: '4', height: '4', background: 'black', top: '10', left: '55', where: head});
+		addElem({id: 'mouth', width: '40', height: '4', background: 'green', top: '35', left: '15', where: head});
+			addElem({id: 'sml', width: '4', height: '4', background: 'green', top: '32', left: '12', where: el('head')});
+			addElem({id: 'smr', width: '4', height: '4', background: 'green', top: '32', left: '54', where: el('head')});
+
+		el('sml').style.display = 'none';
+		el('smr').style.display = 'none';
+
+	addElem({id: 'body', width: '50', height: '70', border: '1px solid #848461', top: '62', left: '20', where: robot});
+	
+	addElem({id: 'lfoot', width: '15', height: '10', border: '1px solid #848461', top: '132', left: '25', where: robot});
+	addElem({id: 'rfoot', width: '15', height: '10', border: '1px solid #848461', top: '132', left: '50', where: robot});
+}
+
+//<![CDATA[
+
+function move(obj, destination)
+{
+	setInterval ( function() { 
+		if(parseInt(obj.style.top) < destination)
+		obj.style.top = parseInt(obj.style.top) + 10 + 'px';
+	}, 10 );
+}
+
+//]]>
+
+function smile(status)
+{
+	el('sml').style.display = status;
+	el('smr').style.display = status;
+}
+
+
+// execution
+window.onload = function() {
+	hideFields();
+	robo();
+}
+
+$('input, textarea').live("paste input keyup", function(e) {
+    inputCheck($(this)); 	
+});
+
+
+</script>
+
+</head>
+	<body>
+		<form id="forma" action="" style="float: left">
+			<xsl:for-each select="$group">
+				<fieldset name="{@name}" id="{@name}">
+					<legend>
+						<xsl:value-of select="@caption"/>
+					</legend>
+		
+					<xsl:apply-templates select="item"/>
+					
+					<xsl:if test="position() = last()">
+						<input type="submit" value="Отправить" />
+						<input type="reset" value="Очистить форму" />
+					</xsl:if>
+				</fieldset>
+				
+		
+			</xsl:for-each>
+			
+		</form>
+
+
+	</body>
+</html>
+
+</xsl:template>
+
+
+<!-- templates for input fields -->
+
+<xsl:template match="item">
+	<label for="{@name}"><xsl:copy-of select="./node()" /></label>
+	<input name="{@name}" type="{@type}" maxlength="{@maxlength}" format="{@format}" />
+</xsl:template>
+
+<xsl:template match="item[@type = 'checkbox']">
+	<input name="{@name}" type="{@type}" maxlength="{@maxlength}" format="{@format}"  />
+	<label for="{@name}"><xsl:copy-of select="./node()"/></label>
+</xsl:template>
+
+<xsl:template match="item[@type='textarea']">
+	<label for="{@name}"><xsl:copy-of select="./node()" /></label>
+	<textarea name="{@name}" type="{@type}" maxlength="{@maxlength}" format="{@format}" />
+</xsl:template>
+
+
+<xsl:template match="item[@type='select']">
+<label for="{@name}"><xsl:value-of select="@name" /></label>
+	<select name="{@name}">
+		<xsl:for-each select="item">
+			<option value="{./text()}">
+				<xsl:value-of select="./text()"/>
+			</option>
+		</xsl:for-each>
+	</select>
+</xsl:template>
+
+<xsl:template match="item[@type='radio']">
+	<label for="{@name}"><xsl:value-of select="@name" /></label>
+	<xsl:for-each select="item">
+		<input type="radio" name="{parent::item/@id}" value="{@name}" style="display: inline"/><xsl:value-of select="@name"/><br/>
+	</xsl:for-each>
+</xsl:template>
+
+
+
+</xsl:stylesheet>
